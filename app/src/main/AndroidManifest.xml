@@ -20,6 +20,18 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".firebase.FirebaseIdService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".firebase.NotificationService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".VerifyActivity"
             android:label="Verify" />

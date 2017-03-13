@@ -2,7 +2,10 @@ package de.Maxr1998.android_pam;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -10,7 +13,6 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,9 +22,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -47,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private Request currentRequest;
 
     private KeyStore keyStore;
-    private AlertDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,21 +59,12 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        String mUsername;
         if (mFirebaseUser == null) {
             // Not signed in, launch the Sign in activity
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
-        } else {
-            mUsername = mFirebaseUser.getDisplayName();
         }
-        TextView user = (TextView) findViewById(R.id.username);
-        user.setText(mUsername);
-
-        String token = FirebaseInstanceId.getInstance().getToken();
-        Log.d(FB_LOG, "Token: " + token);
-
         // Set up real-time database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference databaseRef = database.getReference();
@@ -128,12 +121,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             FingerprintManagerCompat.CryptoObject cryptObject = new FingerprintManagerCompat.CryptoObject(signature);
 
             // Show dialog
-            dialog = new AlertDialog.Builder(this)
-                    .setTitle("Received challenge")
-                    .setMessage(String.format("%1$s\n\nTap sensor to sign & unlock.", data))
-                    .setPositiveButton(android.R.string.ok, null)
-                    .create();
-            dialog.show();
+            Toast.makeText(MainActivity.this, String.format("Received challenge: %1$s", data), Toast.LENGTH_LONG).show();
 
             // Authenticate
             FingerprintManagerCompat.from(this).authenticate(cryptObject, 0, null, new FingerprintManagerCompat.AuthenticationCallback() {
@@ -153,13 +141,11 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     } catch (SignatureException e) {
                         e.printStackTrace();
                     }
-                    dialog.cancel();
                     finish();
                 }
 
                 @Override
                 public void onAuthenticationError(int errMsgId, CharSequence errString) {
-                    dialog.cancel();
                     finish();
                     Toast.makeText(MainActivity.this, errString, Toast.LENGTH_LONG).show();
                 }
@@ -172,6 +158,27 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        if (mFirebaseUser != null && mFirebaseUser.getPhotoUrl() != null) {
+            final MenuItem login = menu.findItem(R.id.login_info);
+            final Handler h = new Handler();
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        HttpURLConnection connection = (HttpURLConnection) new URL(mFirebaseUser.getPhotoUrl().toString()).openConnection();
+                        final BitmapDrawable drawable = new BitmapDrawable(getResources(), BitmapFactory.decodeStream(connection.getInputStream()));
+                        h.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                login.setIcon(drawable);
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }
         return true;
     }
 
