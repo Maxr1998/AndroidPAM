@@ -15,16 +15,16 @@
       },
       "oauth_client": [
         {
+          "client_id": "515535597677-cceu7re6m72fpcodmr45pe9chhsgqp78.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "515535597677-3g0lv5m5qsft0vnftpqr1d7fknndq3ks.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "de.Maxr1998.android_pam",
-            "certificate_hash": "34E7F70ED69F4E370BC4EED7F179081383F172E2"
+            "certificate_hash": "34e7f70ed69f4e370bc4eed7f179081383f172e2"
           }
-        },
-        {
-          "client_id": "515535597677-pfeigdr6k7hhonvrm65uegivv46t2j4s.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
@@ -40,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "515535597677-pfeigdr6k7hhonvrm65uegivv46t2j4s.apps.googleusercontent.com",
+              "client_id": "515535597677-cceu7re6m72fpcodmr45pe9chhsgqp78.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
